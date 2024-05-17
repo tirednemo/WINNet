@@ -23,6 +23,7 @@ parser.add_argument("--test_data", type=str, default='Set12', help='test on Set1
 parser.add_argument("--test_noiseL", type=float, default=25, help='noise level used on test set')
 parser.add_argument("--train_noiseL", type=float, default=25, help='noise level used on training set')
 parser.add_argument("--show_results", type=bool, default=True, help="show results")
+parser.add_argument("--noisy", type=bool, default=False, help="input already noisy")
 
 opt = parser.parse_args()
 
@@ -70,10 +71,13 @@ def main():
             ch = np.expand_dims(ch, 0)
             ch = np.expand_dims(ch, 1)
             ISource = torch.Tensor(ch)
-            # noise
-            noise = torch.FloatTensor(ISource.size()).normal_(mean=0, std=opt.test_noiseL/255.)
-            # noisy image
-            INoisy = ISource + noise
+
+            if opt.noisy:
+                INoisy = ISource
+            else:
+                noise = torch.FloatTensor(ISource.size()).normal_(mean=0, std=opt.test_noiseL/255.)
+                INoisy = ISource + noise
+                
             ISource, INoisy = Variable(ISource.cuda()), Variable(INoisy.cuda())
 
             stdNv_test = Variable(opt.test_noiseL * torch.ones(1).cuda())

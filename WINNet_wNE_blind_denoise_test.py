@@ -24,6 +24,7 @@ parser.add_argument("--logdirne", type=str, default="logs", help='path of log fi
 parser.add_argument("--test_data", type=str, default='Set12', help='test on Set12 or Set68')
 parser.add_argument("--test_noiseL", type=float, default=25, help='noise level used on test set')
 parser.add_argument("--show_results", type=bool, default=True, help="show results")
+parser.add_argument("--noisy", type=bool, default=False, help="input already noisy")
 
 opt = parser.parse_args()
 
@@ -82,10 +83,12 @@ def main():
             if ISource.size(3) % 2 == 1:
                 ISource = ISource[:, :, :, 0:ISource.size(3) - 1]
 
-            # noise
-            noise = torch.FloatTensor(ISource.size()).normal_(mean=0, std=opt.test_noiseL / 255.)
-            # noisy image
-            INoisy = ISource + noise
+            if opt.noisy:
+                INoisy = ISource
+            else:
+                noise = torch.FloatTensor(ISource.size()).normal_(mean=0, std=opt.test_noiseL/255.)
+                INoisy = ISource + noise
+                
             ISource, INoisy = Variable(ISource.cuda()), Variable(INoisy.cuda())
 
             with torch.no_grad():
